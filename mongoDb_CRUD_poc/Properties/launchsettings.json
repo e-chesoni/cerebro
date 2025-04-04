@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "mongoDb_CRUD_poc (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "mongoDb_CRUD_poc (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}

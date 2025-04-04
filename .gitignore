@@ -1,0 +1,18 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build outputs
+bin/
+obj/
+
+# MongoDB temp files
+*.log
+*.lock
+
+# OS junk
+*.DS_Store
+Thumbs.db
