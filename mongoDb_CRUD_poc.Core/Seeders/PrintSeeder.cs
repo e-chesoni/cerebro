@@ -37,23 +37,34 @@ public class PrintSeeder : IPrintSeeder
             // add sliceId to sliceId list
             sliceIds.Add(sliceId);
 
+            // get full path to job file
+            var fullPath = files[i];
+
+            // extract file name
+            var fileName = Path.GetFileName(fullPath);
+
             // create a slice model
             var slice = new SliceModel
             {
                 id = sliceId,
                 printId = printId,
                 layer = i,
-                imagePath = files[i],
+                imagePath = fullPath,
+                fileName = fileName,
                 marked = false,
             };
             // add slices to slice collection using slice service
             await _sliceService.AddSlice(slice);
         }
+        
+        // get print directory
+        var printName = Path.GetFileName(directoryPath.TrimEnd(Path.DirectorySeparatorChar));
 
         // create a print model and add slice ids to it
         var print = new PrintModel
         {
             id = printId,
+            name = printName,
             directoryPath = directoryPath, // TODO: You need to get the full path
             startTime = DateTime.UtcNow,
             sliceIds = sliceIds,

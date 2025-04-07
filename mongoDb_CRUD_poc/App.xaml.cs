@@ -88,8 +88,8 @@ public partial class App : Application
             Task.Run(async () =>
             {
                 // WARNING: only run one of these
-                //await mongoDbSeeder.ClearDatabaseAsync(true);
-                await mongoDbSeeder.SeedDatabaseAsync();
+                await mongoDbSeeder.ClearDatabaseAsync(true);
+                //await mongoDbSeeder.SeedDatabaseAsync();
             });
 
             // Views and ViewModels

@@ -11,10 +11,17 @@ public class PrintModel
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string id { get; set; }
+    public string name { get; set; }
     public string directoryPath { get; set; }
     public DateTime startTime { get; set; }
-    public DateTime endTime { get; set; }
-    public TimeSpan printDuration => endTime - startTime;
+    
+    // Nullable endTime
+    [BsonIgnoreIfNull]
+    public DateTime? endTime { get; set; }
+    
+    // Nullable duration
+    [BsonIgnoreIfNull]
+    public TimeSpan? duration => endTime - startTime;
 
     [BsonRepresentation(BsonType.ObjectId)]
     public List<string> sliceIds { get; set; }

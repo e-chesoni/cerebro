@@ -29,7 +29,7 @@
                 <controls:DataGridTextColumn Binding="{Binding id}" Header="ID" />
                 <controls:DataGridTextColumn Binding="{Binding directoryPath}" Header="Directory Path" />
                 <controls:DataGridTextColumn Binding="{Binding complete}" Header="Complete?" />
-                <controls:DataGridTextColumn Binding="{Binding printDuration}" Header="Print Duration" />
+                <controls:DataGridTextColumn Binding="{Binding duration}" Header="Print Duration" />
                 <controls:DataGridTextColumn Binding="{Binding startTime}" Header="Start Time" />
                 <controls:DataGridTextColumn Binding="{Binding endTime}" Header="End Time" />
                 <controls:DataGridTextColumn Binding="{Binding totalSlices}" Header="Total Slices" />

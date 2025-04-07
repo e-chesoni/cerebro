@@ -87,7 +87,6 @@
                              Height="40"
                              VerticalAlignment="Center"
                              HorizontalAlignment="Center"
-                             PlaceholderText="0000_slice_default_text.sjf"
                              IsEnabled="False"/>
                     </Grid>
                 <Grid Grid.Column="4">

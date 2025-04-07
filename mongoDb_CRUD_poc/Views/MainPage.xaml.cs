@@ -20,13 +20,41 @@ public sealed partial class MainPage : Page
         InitializeComponent();
     }
 
+    private void UpdatePageText()
+    {
+        if (ViewModel.currentPrint == null)
+        {
+            Debug.WriteLine("❌ Current print is null.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ViewModel.currentPrint.directoryPath))
+        {
+            Debug.WriteLine("❌ Directory path is null or empty.");
+            return;
+        }
+
+        if (ViewModel.currentSlice == null)
+        {
+            Debug.WriteLine("❌ Current slice is null.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ViewModel.currentSlice.imagePath))
+        {
+            Debug.WriteLine("❌ Slice image path is null or empty."); // image path is null or empty
+            return;
+        }
+
+        // ✅ All values are valid — update the UI
+        PrintNameTextBlock.Text = ViewModel.currentPrint.name;
+        CurrentSliceTextBox.Text = ViewModel.currentSlice.fileName;
+    }
+
+
     private void GetSlices_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        //ViewModel.SetPrintByID(directoryInput.Text);
-        //ViewModel.SetPrintByDirectory(directoryInput.Text);
         ViewModel.GenerateNewPrint(directoryInput.Text);
-        
-        // TODO: current slice may be null here
         if (ViewModel.currentSlice != null)
         {
             if (ViewModel.currentSlice.imagePath == null)
@@ -34,8 +62,7 @@ public sealed partial class MainPage : Page
                 Debug.WriteLine("❌ImagePath is null.");
                 return;
             }
-            PrintNameTextBlock.Text = ViewModel.currentPrint.directoryPath.ToString();
-            CurrentSliceTextBox.Text = ViewModel.currentSlice.imagePath.ToString();
+            UpdatePageText();
         }
     }
 
@@ -62,7 +89,8 @@ public sealed partial class MainPage : Page
         if (folder != null)
         {
             directoryInput.Text = folder.Path;
-            ViewModel.GenerateNewPrint(folder.Path);
+            await ViewModel.GenerateNewPrint(folder.Path);
         }
+        UpdatePageText();
     }
 }

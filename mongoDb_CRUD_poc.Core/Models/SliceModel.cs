@@ -15,6 +15,7 @@ public class SliceModel
     public string printId { get; set; }  // for reverse lookup
 
     public string imagePath { get; set; }
+    public string fileName { get; set; }
     public int layer { get; set; } // order of slice
     public double layerThickness { get; set; }
     public double power { get; set; }

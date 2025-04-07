@@ -25,7 +25,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         _sliceService = sliceService;
         _seeder = seeder;
     }
-    public async void GenerateNewPrint(string fullPath)
+    public async Task GenerateNewPrint(string fullPath)
     {
         
         // check if print already exists in db
@@ -42,41 +42,38 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         }
 
         // set print on view model
-        SetPrint(fullPath); // calls update slices
+        await SetPrint(fullPath); // calls update slices
 
         return;
     }
-    public async void SetPrint(string directoryPath)
+    public async Task SetPrint(string directoryPath)
     {
         currentPrint = await _printService.GetPrintByDirectory(directoryPath);
-        // update slices
-        UpdateSlicesHelper();
+        await UpdateSlicesHelper(); // ✅ await this now
     }
 
-    private void UpdateSlicesHelper()
+    private async Task UpdateSlicesHelper()
     {
         sliceCollection.Clear();
-        GetSlices();
-        SetCurrentSlice();
+        await GetSlices();
+        await SetCurrentSlice();
     }
 
-    public async void SetPrintByID(string id)
+    public async Task SetPrintByID(string id)
     {
         Debug.WriteLine("✅Updating current print based on id.");
         currentPrint = await _printService.GetPrintById(id);
-        // update slices
-        UpdateSlicesHelper();
+        await UpdateSlicesHelper(); // ✅ now awaits properly
     }
 
     public async void SetPrintByDirectory(string fullPath)
     {
         Debug.WriteLine("✅Updating current print based on directory.");
         currentPrint = await _printService.GetPrintByDirectory(fullPath);
-        // update slices
-        UpdateSlicesHelper();
+        await UpdateSlicesHelper();
     }
 
-    public async void GetSlices()
+    public async Task GetSlices()
     {
         sliceCollection.Clear();
         try
@@ -111,18 +108,18 @@ public class MainViewModel : ObservableRecipient, INavigationAware
             System.Diagnostics.Debug.WriteLine($"Error loading data: {ex.Message}");
         }
     }
-    private async void SetCurrentSlice()
+    private async Task SetCurrentSlice()
     {
         var nextUnmarked = await _sliceService.GetFirstUnmarkedSlice(currentPrint);
         if (nextUnmarked == null)
         {
             // make current slice the last marked slice
-            Debug.WriteLine("All slices have been marked. Setting current slice to last marked slice.");
+            Debug.WriteLine($"✅All slices have been marked. Setting current slice to last marked slice: {currentSlice.imagePath}");
             currentSlice = await _sliceService.GetLastMarkedSlice(currentPrint);
         }
         else
         {
-            Debug.WriteLine("✅Setting current slice to next unmarked slice.");
+            Debug.WriteLine($"✅Setting current slice to next unmarked slice: {currentSlice.imagePath}");
             currentSlice = nextUnmarked;
         }
     }
@@ -130,8 +127,8 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     public async void OnNavigatedTo(object parameter)
     {
         sliceCollection.Clear();
-        currentPrint = await _printService.GetFirstPrintAsync();
-        UpdateSlicesHelper();
+        //currentPrint = await _printService.GetFirstPrintAsync();
+        //UpdateSlicesHelper();
     }
 
     public void OnNavigatedFrom()
