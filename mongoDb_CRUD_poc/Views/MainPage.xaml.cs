@@ -20,7 +20,7 @@ public sealed partial class MainPage : Page
         InitializeComponent();
     }
 
-    private void PopulatePageText()
+    private async void PopulatePageText()
     {
         var print = ViewModel.currentPrint;
         var slice = ViewModel.currentSlice;
@@ -36,7 +36,8 @@ public sealed partial class MainPage : Page
                         PrintNameTextBlock.Text = print.name;
                         CurrentSliceTextBox.Text = slice.fileName;
                         StatusTextBlock.Text = print?.complete == true ? "Complete" : "Incomplete";
-                        SlicesMarkedTextBlock.Text = ViewModel.GetSlicesMarked().ToString(); // TODO: Fix weird text this returns...should be a number
+                        SlicesMarkedTextBlock.Text = (await ViewModel.GetSlicesMarked()).ToString();
+                        TotalSlicesTextBlock.Text = (await ViewModel.GetTotalSlices()).ToString();
                         if (print.duration != null)
                         {
                             DurationTextBlock.Text = print.duration.ToString();

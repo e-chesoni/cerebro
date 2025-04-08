@@ -5,7 +5,9 @@ public interface ISliceService
 {
     Task<IEnumerable<SliceModel>> GetAllSlices();
 
-    public Task<long> MarkedSlicesCount(string printId);
+    public Task<long> CountMarkedOrUnmarked(string printId, bool marked);
+
+    public Task<long> TotalSlices(string printId);
 
     public Task<bool> AllSlicesMarked(string printId);
 

@@ -176,20 +176,24 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Margin="10,0">
-                    <TextBlock Text="Marked " 
-                               VerticalAlignment="Center"/>
-
+                    <!-- Padding: L, T, R, B-->
+                    <TextBlock Text="Marked:" 
+                               VerticalAlignment="Center"
+                               Padding="2,0"/>
                     <TextBlock x:Name="SlicesMarkedTextBlock" 
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center"
+                               />
 
-                    <TextBlock Text=" / " 
+                    <TextBlock Text="/" 
                                VerticalAlignment="Center"/>
 
                     <TextBlock x:Name="TotalSlicesTextBlock" 
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center"
+                               Padding="0,0,2,0"/>
 
-                    <TextBlock Text=" slices" 
-                               VerticalAlignment="Center"/>
+                    <TextBlock Text="slices" 
+                               VerticalAlignment="Center"
+                               Padding="2,0"/>
                 </StackPanel>
 
             </Grid>
