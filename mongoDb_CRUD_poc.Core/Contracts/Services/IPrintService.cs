@@ -9,6 +9,8 @@ public interface IPrintService
 
     public Task<bool> IsPrintComplete(string printId);
 
+    public Task<long> SlicesMarked(string printId);
+
     Task<IEnumerable<PrintModel>> GetAllPrints();
 
     Task<PrintModel> GetPrintById(string id);

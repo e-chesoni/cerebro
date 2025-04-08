@@ -36,6 +36,7 @@ public sealed partial class MainPage : Page
                         PrintNameTextBlock.Text = print.name;
                         CurrentSliceTextBox.Text = slice.fileName;
                         StatusTextBlock.Text = print?.complete == true ? "Complete" : "Incomplete";
+                        SlicesMarkedTextBlock.Text = ViewModel.GetSlicesMarked().ToString(); // TODO: Fix weird text this returns...should be a number
                         if (print.duration != null)
                         {
                             DurationTextBlock.Text = print.duration.ToString();
@@ -73,6 +74,7 @@ public sealed partial class MainPage : Page
         CurrentSliceTextBox.Text = "";
         StatusTextBlock.Text = "";
         DurationTextBlock.Text = "";
+        SlicesMarkedTextBlock.Text = "";
         ViewModel.ClearData();
     }
 

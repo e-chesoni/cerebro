@@ -11,14 +11,18 @@ public class SliceService : ISliceService
         _slices = mongoDbService.GetCollection<SliceModel>();
     }
 
-    public async Task<bool> AllSlicesMarked(string printId)
+    public async Task<long> MarkedSlicesCount(string printId)
     {
         var filter = Builders<SliceModel>.Filter.And(
             Builders<SliceModel>.Filter.Eq(s => s.printId, printId),
             Builders<SliceModel>.Filter.Eq(s => s.marked, false)
         );
-        var unmarked = await _slices.CountDocumentsAsync(filter);
-        return unmarked == 0;
+        return await _slices.CountDocumentsAsync(filter);
+    }
+
+    public async Task<bool> AllSlicesMarked(string printId)
+    {
+        return await MarkedSlicesCount(printId) == 0;
     }
 
     public async Task<SliceModel> GetSliceBySliceId(string id)

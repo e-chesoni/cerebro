@@ -5,6 +5,8 @@ public interface ISliceService
 {
     Task<IEnumerable<SliceModel>> GetAllSlices();
 
+    public Task<long> MarkedSlicesCount(string printId);
+
     public Task<bool> AllSlicesMarked(string printId);
 
     Task<SliceModel> GetSliceBySliceId(string sliceId);

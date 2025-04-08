@@ -169,31 +169,29 @@
                                HorizontalAlignment="Left"/>
                 </Grid>
 
-                
 
-                <Grid Grid.Column="3">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                               Text="Marked "
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Right"/>
-                    <TextBlock/>
-                    <TextBlock Grid.Column="1"
-                               x:Name="SliceFracTextBlock"
-                               Text="___/___"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"
-                               Padding="10"/>
-                    <TextBlock Grid.Column="2"
-                               Text=" slices"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Left"/>
-                    <TextBlock/>
-                </Grid>
+
+                <StackPanel Grid.Column="3"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="10,0">
+                    <TextBlock Text="Marked " 
+                               VerticalAlignment="Center"/>
+
+                    <TextBlock x:Name="SlicesMarkedTextBlock" 
+                               VerticalAlignment="Center"/>
+
+                    <TextBlock Text=" / " 
+                               VerticalAlignment="Center"/>
+
+                    <TextBlock x:Name="TotalSlicesTextBlock" 
+                               VerticalAlignment="Center"/>
+
+                    <TextBlock Text=" slices" 
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
             </Grid>
             
             <Grid Grid.Row="5" HorizontalAlignment="Center">

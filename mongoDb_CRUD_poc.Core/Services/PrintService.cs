@@ -62,6 +62,10 @@ public class PrintService : IPrintService
     {
         return await _sliceService.AllSlicesMarked(printId);
     }
+    public async Task<long> SlicesMarked(string printId)
+    {
+        return await _sliceService.MarkedSlicesCount(printId);
+    }
 
     public async Task AddPrint(PrintModel print)
     {

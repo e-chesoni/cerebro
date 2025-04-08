@@ -79,7 +79,10 @@ public class MainViewModel : ObservableRecipient, INavigationAware
             return await _sliceService.GetNextSlice(currentPrint);
         }
     }
-
+    public async Task<long> GetSlicesMarked()
+    {
+        return await _printService.SlicesMarked(currentPrint.id);
+    }
     public async Task<IEnumerable<SliceModel>> GetSlices()
     {
         if (currentPrint == null)
