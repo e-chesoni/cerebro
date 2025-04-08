@@ -2,6 +2,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using mongoDb_CRUD_poc.Core.Contracts.Services;
+using mongoDb_CRUD_poc.ViewModels.DisplayModels;
 using MongoDbCrudPOC.Contracts.ViewModels;
 using MongoDbCrudPOC.Core.Contracts.Services;
 using MongoDbCrudPOC.Core.Models;
@@ -11,7 +12,7 @@ namespace MongoDbCrudPOC.ViewModels;
 public class DataGridViewModel : ObservableRecipient, INavigationAware
 {
     private readonly IPrintService _printService;
-    public ObservableCollection<PrintModel> printCollection { get; } = new ObservableCollection<PrintModel>();
+    public ObservableCollection<PrintDisplayModel> printCollection { get; } = new ObservableCollection<PrintDisplayModel>();
 
     public DataGridViewModel(IPrintService printService)
     {
@@ -23,8 +24,20 @@ public class DataGridViewModel : ObservableRecipient, INavigationAware
 
         try
         {
-            var data = await _printService.GetAllPrints();
-            foreach (var item in data)
+            var prints = await _printService.GetAllPrints();
+
+            var displayModels = prints.Select(p => new PrintDisplayModel
+            {
+                id = p.id,
+                directoryPath = p.directoryPath,
+                duration = p.duration?.ToString(@"hh\:mm\:ss") ?? "",
+                startTimeLocal = p.startTime.ToLocalTime().ToString("MM/dd/yyyy HH:mm:ss"),
+                endTimeLocal = p.endTime?.ToLocalTime().ToString("MM/dd/yyyy HH:mm:ss") ?? "",
+                totalSlices = p.totalSlices,
+                complete = p.complete,
+            }).ToList();
+
+            foreach (var item in displayModels)
             {
                 printCollection.Add(item);
             }
