@@ -51,7 +51,51 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     }
     #endregion
 
+    private async Task CompleteCurrentPrintAsync()
+    {
+        var print = currentPrint;
+        if (print == null)
+        {
+            Debug.WriteLine("❌Cannot update print; print is null.");
+            return;
+        }
+        else
+        {
+            // update end time to now
+            print.endTime = DateTime.UtcNow;
+            // update print status to complete
+            print.complete = true;
+            // set current print to updated print
+            currentPrint = print;
+            // update print in db
+            await _printService.EditPrint(print);
+        }
+    }
+
+    public Task<TimeSpan?> GetPrintDuration()
+    {
+        if (currentPrint == null)
+        {
+            Debug.WriteLine("❌Cannot update print; print is null.");
+            return Task.FromResult<TimeSpan?>(null);
+        }
+        else
+        {
+            Debug.WriteLine("✅Current print is set.");
+            if (currentPrint.duration == null)
+            {
+                Debug.WriteLine("❌Duration is null.");
+                return Task.FromResult<TimeSpan?>(null);
+            }
+            else
+            {
+                Debug.WriteLine("✅Returning current print duration.");
+                return Task.FromResult(currentPrint.duration);
+            }
+        }
+    }
     #region Getters
+
     private async Task<SliceModel?> GetNextSlice()
     {
         if (_sliceService == null)
@@ -71,6 +115,8 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         if (printComplete)
         {
             Debug.WriteLine("✅Print is complete. Returning last marked slice.");
+            // update print in db
+            await CompleteCurrentPrintAsync();
             return await _sliceService.GetLastSlice(currentPrint);
         }
         else
@@ -83,7 +129,6 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     {
         return await _printService.SlicesMarked(currentPrint.id);
     }
-
     public async Task<long> GetTotalSlices()
     {
         return await _printService.TotalSlices(currentPrint.id);
@@ -144,7 +189,6 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     }
     public async Task AddPrintToDatabase(string fullPath)
     {
-
         // check if print already exists in db
         var existingPrint = await _printService.GetPrintByDirectory(fullPath);
 

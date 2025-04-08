@@ -24,7 +24,7 @@ public sealed partial class MainPage : Page
     {
         var print = ViewModel.currentPrint;
         var slice = ViewModel.currentSlice;
-        if ( print != null)
+        if (print != null)
         {
             if (!string.IsNullOrWhiteSpace(print.directoryPath))
             {
@@ -38,10 +38,12 @@ public sealed partial class MainPage : Page
                         StatusTextBlock.Text = print?.complete == true ? "Complete" : "Incomplete";
                         SlicesMarkedTextBlock.Text = (await ViewModel.GetSlicesMarked()).ToString();
                         TotalSlicesTextBlock.Text = (await ViewModel.GetTotalSlices()).ToString();
-                        if (print.duration != null)
-                        {
-                            DurationTextBlock.Text = print.duration.ToString();
-                        }
+                        // convert UTC to local time
+                        var duration = print.duration;
+                        var localStart = print.startTime.ToLocalTime();
+                        var localEnd = print.endTime?.ToLocalTime();
+                        Debug.WriteLine($"📅 start: {print.startTime}, end: {print.endTime}, duration: {print.duration}");
+                        DurationTextBlock.Text = duration?.ToString(@"hh\:mm\:ss") ?? "—";
                     }
                     else
                     {
@@ -76,6 +78,7 @@ public sealed partial class MainPage : Page
         StatusTextBlock.Text = "";
         DurationTextBlock.Text = "";
         SlicesMarkedTextBlock.Text = "";
+        TotalSlicesTextBlock.Text = "";
         ViewModel.ClearData();
     }
 
@@ -127,8 +130,24 @@ public sealed partial class MainPage : Page
         InitializeWithWindow.Initialize(folderPicker, hwnd);
 
         var folder = await folderPicker.PickSingleFolderAsync();
+        // folder must contain .sjf files. if it does not contain any, error and return
         if (folder != null)
         {
+            // Check for .sjf files in the selected folder
+            var files = Directory.EnumerateFiles(folder.Path, "*.sjf");
+            if (!files.Any())
+            {
+                Debug.WriteLine("❌ No .sjf files found in the selected folder.");
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "No Job Files in Folder",
+                    Content = "The selected folder does not contain any .sjf files.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.Content.XamlRoot
+                };
+                await dialog.ShowAsync();
+                return;
+            }
             directoryInput.Text = folder.Path;
             await ViewModel.AddPrintToDatabase(folder.Path);
         }

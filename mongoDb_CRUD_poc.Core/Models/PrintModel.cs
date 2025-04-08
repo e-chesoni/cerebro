@@ -21,7 +21,9 @@ public class PrintModel
     
     // Nullable duration
     [BsonIgnoreIfNull]
-    public TimeSpan? duration => endTime - startTime;
+    public TimeSpan? duration => endTime.HasValue && endTime.Value > startTime
+                                ? endTime.Value - startTime
+                                : null;
 
     [BsonRepresentation(BsonType.ObjectId)]
     public List<string> sliceIds { get; set; }
