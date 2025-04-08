@@ -3,29 +3,28 @@
 namespace mongoDb_CRUD_poc.Core.Contracts.Services;
 public interface IPrintService
 {
-    public Task<PrintModel> GetFirstPrintAsync();
+    #region Counters
+    Task<long> TotalPrintsCount();
+    public Task<long> TotalSlicesCount(string printId);
+    public Task<long> MarkedOrUnmarkedCount(string printId);
+    #endregion
     
-    Task<long> TotalPrints();
-
-    public Task<bool> IsPrintComplete(string printId);
-
-    public Task<long> TotalSlices(string printId);
-
-    public Task<long> SlicesMarked(string printId);
-
-    Task<IEnumerable<PrintModel>> GetAllPrints();
-
-    Task<PrintModel> GetPrintById(string id);
-
+    #region Getters
+    public Task<PrintModel> GetFirstPrintAsync();
     Task<PrintModel> GetPrintByDirectory(string DirectoryPath);
-
+    Task<PrintModel> GetPrintById(string id);
     Task<IEnumerable<SliceModel>> GetSlicesByPrintId(string id);
+    Task<IEnumerable<PrintModel>> GetAllPrints();
+    #endregion
 
+    #region Checkers
+    public Task<bool> IsPrintComplete(string printId);
+    #endregion
+
+    #region CRUD
     Task AddPrint(PrintModel print);
-
     Task EditPrint(PrintModel print);
-
     Task DeletePrint(PrintModel print);
-
     Task DeleteAllPrints();
+    #endregion
 }

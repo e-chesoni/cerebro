@@ -127,11 +127,11 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     }
     public async Task<long> GetSlicesMarked()
     {
-        return await _printService.SlicesMarked(currentPrint.id);
+        return await _printService.MarkedOrUnmarkedCount(currentPrint.id);
     }
     public async Task<long> GetTotalSlices()
     {
-        return await _printService.TotalSlices(currentPrint.id);
+        return await _printService.TotalSlicesCount(currentPrint.id);
     }
 
     public async Task<IEnumerable<SliceModel>> GetSlices()

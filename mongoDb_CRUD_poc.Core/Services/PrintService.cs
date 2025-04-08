@@ -15,17 +15,33 @@ public class PrintService : IPrintService
         _prints = mongoDbService.GetCollection<PrintModel>();
         _sliceService = sliceService;
     }
+
+    #region Counters
+    /// <summary>
+    /// Gets the total number of prints in the print collection
+    /// </summary>
+    /// <returns>long total prints in database</returns>
+    public async Task<long> TotalPrintsCount()
+    {
+        return await _prints.CountDocumentsAsync(_ => true);
+    }
+    public async Task<long> TotalSlicesCount(string printId)
+    {
+        return await _sliceService.TotalSlicesCount(printId);
+    }
+    public async Task<long> MarkedOrUnmarkedCount(string printId)
+    {
+        return await _sliceService.MarkedOrUnmarkedCount(printId, true);
+    }
+    #endregion
+
+    #region Getters
     public async Task<PrintModel> GetFirstPrintAsync()
     {
         return await _prints
             .Find(_ => true)
             .SortByDescending(p => p.startTime)
             .FirstOrDefaultAsync();
-    }
-    public async Task<PrintModel> GetPrintById(string id)
-    {
-        var filter = Builders<PrintModel>.Filter.Eq(p => p.id, id);
-        return await _prints.Find(filter).FirstOrDefaultAsync();
     }
     public async Task<PrintModel?> GetPrintByDirectory(string directoryPath)
     {
@@ -40,7 +56,11 @@ public class PrintService : IPrintService
 
         return print;
     }
-
+    public async Task<PrintModel> GetPrintById(string id)
+    {
+        var filter = Builders<PrintModel>.Filter.Eq(p => p.id, id);
+        return await _prints.Find(filter).FirstOrDefaultAsync();
+    }
     public async Task<IEnumerable<SliceModel>> GetSlicesByPrintId(string printId)
     {
         if (string.IsNullOrEmpty(printId))
@@ -48,30 +68,21 @@ public class PrintService : IPrintService
 
         return await _sliceService.GetSlicesByPrintId(printId);
     }
-
-    /// <summary>
-    /// Gets the total number of prints in the print collection
-    /// </summary>
-    /// <returns>long total prints in database</returns>
-    public async Task<long> TotalPrints()
+    public async Task<IEnumerable<PrintModel>> GetAllPrints()
     {
-        return await _prints.CountDocumentsAsync(_ => true);
+        var results = await _prints.Find(_ => true).ToListAsync();
+        return results.AsEnumerable();
     }
+    #endregion
 
+    #region Checkers
     public async Task<bool> IsPrintComplete(string printId)
     {
         return await _sliceService.AllSlicesMarked(printId);
     }
+    #endregion
 
-    public async Task<long> TotalSlices(string printId)
-    {
-        return await _sliceService.TotalSlices(printId);
-    }
-    public async Task<long> SlicesMarked(string printId)
-    {
-        return await _sliceService.CountMarkedOrUnmarked(printId, true);
-    }
-
+    #region CRUD
     public async Task AddPrint(PrintModel print)
     {
         await _prints.InsertOneAsync(print);
@@ -94,14 +105,9 @@ public class PrintService : IPrintService
         var toEdit = Builders<PrintModel>.Filter.Eq(p => p.id, print.id);
         await _prints.ReplaceOneAsync(toEdit, print);
     }
-    public async Task<IEnumerable<PrintModel>> GetAllPrints()
-    {
-        var results = await _prints.Find(_ => true).ToListAsync();
-        return results.AsEnumerable();
-    }
     public async Task DeleteAllPrints()
     {
         await _prints.DeleteManyAsync(_ => true);
     }
-
+    #endregion
 }

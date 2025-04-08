@@ -10,14 +10,21 @@ public class SliceService : ISliceService
     {
         _slices = mongoDbService.GetCollection<SliceModel>();
     }
-
+    #region Counters
+    public async Task<long> TotalSlicesCount(string printId)
+    {
+        var filter = Builders<SliceModel>.Filter.And(
+            Builders<SliceModel>.Filter.Eq(s => s.printId, printId)
+        );
+        return await _slices.CountDocumentsAsync(filter);
+    }
     /// <summary>
-    /// Counts slices that are marked or unmarked (depending on boolean input)
+    /// Counts slices that are marked or unmarked
     /// </summary>
     /// <param name="printId"></param>
-    /// <param name="marked"></param>
-    /// <returns></returns>
-    public async Task<long> CountMarkedOrUnmarked(string printId, bool marked)
+    /// <param name="marked">If true, get marked slices, else get unmarked slices.</param>
+    /// <returns>count of marked or unmarked slices</returns>
+    public async Task<long> MarkedOrUnmarkedCount(string printId, bool marked)
     {
         var filter = Builders<SliceModel>.Filter.And(
             Builders<SliceModel>.Filter.Eq(s => s.printId, printId),
@@ -25,31 +32,20 @@ public class SliceService : ISliceService
         );
         return await _slices.CountDocumentsAsync(filter);
     }
+    #endregion
 
-    public async Task<long> TotalSlices(string printId)
+    #region Getters
+    public async Task<IEnumerable<SliceModel>> GetSlicesByPrintId(string printId)
     {
-        var filter = Builders<SliceModel>.Filter.And(
-            Builders<SliceModel>.Filter.Eq(s => s.printId, printId)
-        );
-        return await _slices.CountDocumentsAsync(filter);
-    }
-
-    public async Task<bool> AllSlicesMarked(string printId)
-    {
-        var marked = false;
-        return await CountMarkedOrUnmarked(printId, marked) == 0;
+        var filter = Builders<SliceModel>.Filter.Eq(s => s.printId, printId);
+        var slices = await _slices.Find(filter).SortBy(s => s.layer).ToListAsync();
+        return slices;
     }
 
     public async Task<SliceModel> GetSliceBySliceId(string id)
     {
         var filter = Builders<SliceModel>.Filter.Eq(s => s.id, id);
         return await _slices.Find(filter).FirstOrDefaultAsync();
-    }
-    public async Task<IEnumerable<SliceModel>> GetSlicesByPrintId(string printId)
-    {
-        var filter = Builders<SliceModel>.Filter.Eq(s => s.printId, printId);
-        var slices = await _slices.Find(filter).SortBy(s => s.layer).ToListAsync();
-        return slices;
     }
     public async Task<SliceModel?> GetFirstSlice(PrintModel print)
     {
@@ -65,7 +61,12 @@ public class SliceService : ISliceService
 
         return firstSlice;
     }
-
+    /// <summary>
+    /// Returns the first unmarked slice associated with the given print.
+    /// If all slices are marked, returns the last slice.
+    /// </summary>
+    /// <param name="print">The print to retrieve the slice from.</param>
+    /// <returns>The next <see cref="SliceModel"/> to process, or the last one if all are marked.</returns>
     public async Task<SliceModel?> GetNextSlice(PrintModel print)
     {
         if (print?.sliceIds == null || !print.sliceIds.Any())
@@ -83,7 +84,6 @@ public class SliceService : ISliceService
 
         return slice;
     }
-
     public async Task<SliceModel?> GetLastSlice(PrintModel print)
     {
         if (print?.sliceIds == null || !print.sliceIds.Any())
@@ -101,8 +101,23 @@ public class SliceService : ISliceService
 
         return slice;
     }
+    public async Task<IEnumerable<SliceModel>> GetAllSlices()
+    {
+        var results = await _slices.Find(_ => true).ToListAsync();
+        return results.AsEnumerable();
+    }
 
+    #endregion
 
+    #region Checkers
+    public async Task<bool> AllSlicesMarked(string printId)
+    {
+        var marked = false;
+        return await MarkedOrUnmarkedCount(printId, marked) == 0;
+    }
+    #endregion
+
+    #region CRUD
     public async Task AddSlice(SliceModel slice)
     {
         await _slices.InsertOneAsync(slice);
@@ -117,14 +132,10 @@ public class SliceService : ISliceService
         var toEdit = Builders<SliceModel>.Filter.Eq(s => s.id, slice.id);
         await _slices.ReplaceOneAsync(toEdit, slice);
     }
-    public async Task<IEnumerable<SliceModel>> GetAllSlices()
-    {
-        var results = await _slices.Find(_ => true).ToListAsync();
-        return results.AsEnumerable();
-    }
     public async Task DeleteAllSlices()
     {
         await _slices.DeleteManyAsync(_ => true);
     }
+    #endregion
 
 }
