@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.UI.Xaml.Controls;
-
+using MongoDbCrudPOC.Core.Models;
 using MongoDbCrudPOC.ViewModels;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -20,41 +20,65 @@ public sealed partial class MainPage : Page
         InitializeComponent();
     }
 
-    private void UpdatePageText()
+    private void PopulatePageText()
     {
-        if (ViewModel.currentPrint == null)
+        var print = ViewModel.currentPrint;
+        var slice = ViewModel.currentSlice;
+        if ( print != null)
+        {
+            if (!string.IsNullOrWhiteSpace(print.directoryPath))
+            {
+                if (slice != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(slice.imagePath))
+                    {
+                        // ✅ All values are valid — update the UI
+                        PrintNameTextBlock.Text = print.name;
+                        CurrentSliceTextBox.Text = slice.fileName;
+                        StatusTextBlock.Text = print?.complete == true ? "Complete" : "Incomplete";
+                        if (print.duration != null)
+                        {
+                            DurationTextBlock.Text = print.duration.ToString();
+                        }
+                    }
+                    else
+                    {
+                        Debug.WriteLine("❌ Slice image path is null or empty.");
+                        return;
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine("❌ Current slice is null.");
+                    return;
+                }
+            }
+            else
+            {
+                Debug.WriteLine("❌ Directory path is null or empty.");
+                return;
+            }
+        }
+        else 
         {
             Debug.WriteLine("❌ Current print is null.");
             return;
         }
-
-        if (string.IsNullOrWhiteSpace(ViewModel.currentPrint.directoryPath))
-        {
-            Debug.WriteLine("❌ Directory path is null or empty.");
-            return;
-        }
-
-        if (ViewModel.currentSlice == null)
-        {
-            Debug.WriteLine("❌ Current slice is null.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(ViewModel.currentSlice.imagePath))
-        {
-            Debug.WriteLine("❌ Slice image path is null or empty."); // image path is null or empty
-            return;
-        }
-
-        // ✅ All values are valid — update the UI
-        PrintNameTextBlock.Text = ViewModel.currentPrint.name;
-        CurrentSliceTextBox.Text = ViewModel.currentSlice.fileName;
     }
 
-
-    private void GetSlices_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void ClearPageText()
     {
-        ViewModel.GenerateNewPrint(directoryInput.Text);
+        directoryInput.Text = "";
+        PrintNameTextBlock.Text = "";
+        CurrentSliceTextBox.Text = "";
+        StatusTextBlock.Text = "";
+        DurationTextBlock.Text = "";
+        ViewModel.ClearData();
+    }
+
+    private async void GetSlices_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        await ViewModel.AddPrintToDatabase(directoryInput.Text);
         if (ViewModel.currentSlice != null)
         {
             if (ViewModel.currentSlice.imagePath == null)
@@ -62,18 +86,32 @@ public sealed partial class MainPage : Page
                 Debug.WriteLine("❌ImagePath is null.");
                 return;
             }
-            UpdatePageText();
+            PopulatePageText();
         }
     }
 
-    private void MarkSliceButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void MarkSliceButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        // proceed to next slice
+        // TODO: change current slice marked? to true
+        await ViewModel.MarkSlice();
+        // TODO: update current slice in display
+        PopulatePageText();
     }
 
-    private void DeletePrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void DeletePrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-
+        if (ViewModel.currentPrint == null)
+        {
+            Debug.WriteLine("❌Current print is null");
+            return;
+        }
+        else
+        {
+            Debug.WriteLine("✅Deleting print.");
+            await ViewModel.DeleteCurrentPrint();
+            Debug.WriteLine("✅Removing data from display.");
+            ClearPageText();
+        }
     }
 
     private async void BrowseButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -89,8 +127,8 @@ public sealed partial class MainPage : Page
         if (folder != null)
         {
             directoryInput.Text = folder.Path;
-            await ViewModel.GenerateNewPrint(folder.Path);
+            await ViewModel.AddPrintToDatabase(folder.Path);
         }
-        UpdatePageText();
+        PopulatePageText();
     }
 }

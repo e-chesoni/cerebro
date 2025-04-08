@@ -10,6 +10,17 @@ public class SliceService : ISliceService
     {
         _slices = mongoDbService.GetCollection<SliceModel>();
     }
+
+    public async Task<bool> AllSlicesMarked(string printId)
+    {
+        var filter = Builders<SliceModel>.Filter.And(
+            Builders<SliceModel>.Filter.Eq(s => s.printId, printId),
+            Builders<SliceModel>.Filter.Eq(s => s.marked, false)
+        );
+        var unmarked = await _slices.CountDocumentsAsync(filter);
+        return unmarked == 0;
+    }
+
     public async Task<SliceModel> GetSliceBySliceId(string id)
     {
         var filter = Builders<SliceModel>.Filter.Eq(s => s.id, id);
@@ -21,7 +32,7 @@ public class SliceService : ISliceService
         var slices = await _slices.Find(filter).SortBy(s => s.layer).ToListAsync();
         return slices;
     }
-    public async Task<SliceModel?> GetFirstSliceForPrint(PrintModel print)
+    public async Task<SliceModel?> GetFirstSlice(PrintModel print)
     {
         if (print == null || print.sliceIds == null || !print.sliceIds.Any())
             return null;
@@ -36,7 +47,7 @@ public class SliceService : ISliceService
         return firstSlice;
     }
 
-    public async Task<SliceModel?> GetFirstUnmarkedSlice(PrintModel print)
+    public async Task<SliceModel?> GetNextSlice(PrintModel print)
     {
         if (print?.sliceIds == null || !print.sliceIds.Any())
             return null;
@@ -54,7 +65,7 @@ public class SliceService : ISliceService
         return slice;
     }
 
-    public async Task<SliceModel?> GetLastMarkedSlice(PrintModel print)
+    public async Task<SliceModel?> GetLastSlice(PrintModel print)
     {
         if (print?.sliceIds == null || !print.sliceIds.Any())
             return null;

@@ -49,9 +49,18 @@ public class PrintService : IPrintService
         return await _sliceService.GetSlicesByPrintId(printId);
     }
 
-    public async Task<long> GetPrintCountAsync()
+    /// <summary>
+    /// Gets the total number of prints in the print collection
+    /// </summary>
+    /// <returns>long total prints in database</returns>
+    public async Task<long> TotalPrints()
     {
         return await _prints.CountDocumentsAsync(_ => true);
+    }
+
+    public async Task<bool> IsPrintComplete(string printId)
+    {
+        return await _sliceService.AllSlicesMarked(printId);
     }
 
     public async Task AddPrint(PrintModel print)
@@ -61,6 +70,14 @@ public class PrintService : IPrintService
     public async Task DeletePrint(PrintModel print)
     {
         var toDelete = Builders<PrintModel>.Filter.Eq(p => p.id, print.id);
+        var slices = await GetSlicesByPrintId(print.id);
+        // get print slices
+        foreach (var s in slices)
+        {
+            // delete print slices
+            await _sliceService.DeleteSlice(s);
+        }
+        // delete print
         await _prints.DeleteOneAsync(toDelete);
     }
     public async Task EditPrint(PrintModel print)

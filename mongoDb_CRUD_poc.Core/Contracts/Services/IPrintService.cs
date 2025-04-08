@@ -4,7 +4,10 @@ namespace mongoDb_CRUD_poc.Core.Contracts.Services;
 public interface IPrintService
 {
     public Task<PrintModel> GetFirstPrintAsync();
-    Task<long> GetPrintCountAsync();
+    
+    Task<long> TotalPrints();
+
+    public Task<bool> IsPrintComplete(string printId);
 
     Task<IEnumerable<PrintModel>> GetAllPrints();
 

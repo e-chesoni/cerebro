@@ -17,7 +17,7 @@ public class MongoDbSeeder : IMongoDbSeeder
     {
         var random = new Random();
 
-        var existing = await _printService.GetPrintCountAsync();
+        var existing = await _printService.TotalPrints();
         if (existing > 0)
         {
             Debug.WriteLine($"DB already seeded. Database has {existing} prints");

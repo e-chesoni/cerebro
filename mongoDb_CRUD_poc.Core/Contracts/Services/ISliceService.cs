@@ -5,15 +5,22 @@ public interface ISliceService
 {
     Task<IEnumerable<SliceModel>> GetAllSlices();
 
+    public Task<bool> AllSlicesMarked(string printId);
+
     Task<SliceModel> GetSliceBySliceId(string sliceId);
 
     Task<IEnumerable<SliceModel>> GetSlicesByPrintId(string printId);
 
-    public Task<SliceModel?> GetFirstSliceForPrint(PrintModel print);
+    public Task<SliceModel?> GetFirstSlice(PrintModel print);
 
-    public Task<SliceModel?> GetFirstUnmarkedSlice(PrintModel print);
+    /// <summary>
+    /// Return the first unmarked slice associated with a given print
+    /// </summary>
+    /// <param name="print"></param>
+    /// <returns></returns>
+    public Task<SliceModel?> GetNextSlice(PrintModel print);
 
-    public Task<SliceModel?> GetLastMarkedSlice(PrintModel print);
+    public Task<SliceModel?> GetLastSlice(PrintModel print);
 
     Task AddSlice(SliceModel slice);
 
