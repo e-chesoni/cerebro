@@ -57,7 +57,7 @@ public class SliceService : ISliceService
 
         // Find slice with file name starting with "0000"
         var firstSlice = slices.FirstOrDefault(s =>
-            Path.GetFileNameWithoutExtension(s.imagePath)?.StartsWith("0000") == true);
+            Path.GetFileNameWithoutExtension(s.filePath)?.StartsWith("0000") == true);
 
         return firstSlice;
     }
@@ -137,5 +137,4 @@ public class SliceService : ISliceService
         await _slices.DeleteManyAsync(_ => true);
     }
     #endregion
-
 }

@@ -54,7 +54,7 @@ public class MongoDbSeeder : IMongoDbSeeder
                 {
                     id = sliceId,
                     printId = printId,
-                    imagePath = $"C:\\prints\\print{i}\\slice{j}.png",
+                    filePath = $"C:\\prints\\print{i}\\slice{j}.png",
                     layer = j,
                     layerThickness = layerThickness,
                     power = power,
@@ -76,7 +76,6 @@ public class MongoDbSeeder : IMongoDbSeeder
                 startTime = startTime,
                 endTime = endTime,
                 sliceIds = sliceIds,
-                slicesMarked = numSlices, // ✅ keep progress synced
                 complete = true,
             });
         }
@@ -113,6 +112,5 @@ public class MongoDbSeeder : IMongoDbSeeder
 
         Debug.WriteLine("✅ Collections cleared.");
     }
-
 }
 

@@ -1,5 +1,4 @@
 ﻿using Microsoft.UI.Xaml.Controls;
-
 using MongoDbCrudPOC.ViewModels;
 
 namespace MongoDbCrudPOC.Views;

@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using mongoDb_CRUD_poc.Core.Contracts.Services;
 using MongoDbCrudPOC.Core.Contracts.Services;
 using MongoDbCrudPOC.Core.Models;
-using MongoDbCrudPOC.Core.Services;
 
 namespace mongoDb_CRUD_poc.Core.Seeders;
 public class PrintSeeder : IPrintSeeder
@@ -49,7 +43,7 @@ public class PrintSeeder : IPrintSeeder
                 id = sliceId,
                 printId = printId,
                 layer = i,
-                imagePath = fullPath,
+                filePath = fullPath,
                 fileName = fileName,
                 marked = false,
             };
@@ -68,7 +62,6 @@ public class PrintSeeder : IPrintSeeder
             directoryPath = directoryPath, // TODO: You need to get the full path
             startTime = DateTime.UtcNow,
             sliceIds = sliceIds,
-            slicesMarked = 0,
         };
         await _printService.AddPrint(print);
     }

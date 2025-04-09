@@ -1,9 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Amazon.Auth.AccessControlPolicy;
 using CommunityToolkit.Mvvm.ComponentModel;
 using mongoDb_CRUD_poc.Core.Contracts.Services;
-using mongoDb_CRUD_poc.Core.Services;
 using MongoDbCrudPOC.Contracts.ViewModels;
 using MongoDbCrudPOC.Core.Models;
 
@@ -11,14 +9,16 @@ namespace MongoDbCrudPOC.ViewModels;
 
 public class MainViewModel : ObservableRecipient, INavigationAware
 {
-    #region Variables
+    #region Private Variables
     private readonly IPrintService _printService;
     private readonly ISliceService _sliceService;
     private readonly IPrintSeeder _seeder;
+    #endregion
+
+    #region Public Variables
     public ObservableCollection<SliceModel> sliceCollection { get; } = new ObservableCollection<SliceModel>();
     public PrintModel? currentPrint = new();
     public SliceModel? currentSlice = new();
-    private string _defaultPath = @"C:\Scanner Application\Scanner Software\jobfiles\test";
     #endregion
 
     #region Constructor
@@ -31,72 +31,15 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     #endregion
 
     #region Setters
-    public async Task SetPrint(string directoryPath)
+    public async Task SetCurrentPrintAsync(string directoryPath)
     {
         currentPrint = await _printService.GetPrintByDirectory(directoryPath);
         await UpdateSlicesHelper(); // ✅ await this now
     }
-    public async Task SetPrintByID(string id)
-    {
-        Debug.WriteLine("✅Updating current print based on id.");
-        currentPrint = await _printService.GetPrintById(id);
-        await UpdateSlicesHelper(); // ✅ now awaits properly
-    }
-
-    public async void SetPrintByDirectory(string fullPath)
-    {
-        Debug.WriteLine("✅Updating current print based on directory.");
-        currentPrint = await _printService.GetPrintByDirectory(fullPath);
-        await UpdateSlicesHelper();
-    }
     #endregion
 
-    private async Task CompleteCurrentPrintAsync()
-    {
-        var print = currentPrint;
-        if (print == null)
-        {
-            Debug.WriteLine("❌Cannot update print; print is null.");
-            return;
-        }
-        else
-        {
-            // update end time to now
-            print.endTime = DateTime.UtcNow;
-            // update print status to complete
-            print.complete = true;
-            // set current print to updated print
-            currentPrint = print;
-            // update print in db
-            await _printService.EditPrint(print);
-        }
-    }
-
-    public Task<TimeSpan?> GetPrintDuration()
-    {
-        if (currentPrint == null)
-        {
-            Debug.WriteLine("❌Cannot update print; print is null.");
-            return Task.FromResult<TimeSpan?>(null);
-        }
-        else
-        {
-            Debug.WriteLine("✅Current print is set.");
-            if (currentPrint.duration == null)
-            {
-                Debug.WriteLine("❌Duration is null.");
-                return Task.FromResult<TimeSpan?>(null);
-            }
-            else
-            {
-                Debug.WriteLine("✅Returning current print duration.");
-                return Task.FromResult(currentPrint.duration);
-            }
-        }
-    }
     #region Getters
-
-    private async Task<SliceModel?> GetNextSlice()
+    private async Task<SliceModel?> GetNextSliceAsync()
     {
         if (_sliceService == null)
         {
@@ -125,23 +68,13 @@ public class MainViewModel : ObservableRecipient, INavigationAware
             return await _sliceService.GetNextSlice(currentPrint);
         }
     }
-    public async Task<long> GetSlicesMarked()
+    public async Task<long> GetSlicesMarkedAsync()
     {
         return await _printService.MarkedOrUnmarkedCount(currentPrint.id);
     }
-    public async Task<long> GetTotalSlices()
+    public async Task<long> GetTotalSlicesAsync()
     {
         return await _printService.TotalSlicesCount(currentPrint.id);
-    }
-
-    public async Task<IEnumerable<SliceModel>> GetSlices()
-    {
-        if (currentPrint == null)
-        {
-            Debug.WriteLine("❌Current print is null.");
-            return Enumerable.Empty<SliceModel>();
-        }
-        return await _printService.GetSlicesByPrintId(currentPrint.id);
     }
     #endregion
 
@@ -149,13 +82,60 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     private async Task UpdateSlicesHelper()
     {
         sliceCollection.Clear();
-        await LoadSliceData();
-        currentSlice = await GetNextSlice();
+        await LoadSliceDataAsync();
+        currentSlice = await GetNextSliceAsync();
     }
     #endregion
 
-    #region Data Management
-    public async Task LoadSliceData()
+    #region Access CRUD Methods
+    public async Task AddPrintToDatabaseAsync(string fullPath)
+    {
+        // check if print already exists in db
+        var existingPrint = await _printService.GetPrintByDirectory(fullPath);
+
+        if (existingPrint != null)
+        {
+            Debug.WriteLine($"❌Print with this file path {fullPath} already exists in the database. Canceling new print.");
+        }
+        else
+        {
+            // seed prints
+            await _seeder.CreatePrintFromDirectory(fullPath);
+        }
+
+        // set print on view model
+        await SetCurrentPrintAsync(fullPath); // calls update slices
+
+        return;
+    }
+    private async Task CompleteCurrentPrintAsync()
+    {
+        var print = currentPrint;
+        if (print == null)
+        {
+            Debug.WriteLine("❌Cannot update print; print is null.");
+            return;
+        }
+        else
+        {
+            // update end time to now
+            print.endTime = DateTime.UtcNow;
+            // update print status to complete
+            print.complete = true;
+            // set current print to updated print
+            currentPrint = print;
+            // update print in db
+            await _printService.EditPrint(print);
+        }
+    }
+    public async Task DeleteCurrentPrintAsync()
+    {
+        await _printService.DeletePrint(currentPrint); // deletes slices associated with print
+    }
+    #endregion
+
+    #region Page Data Management
+    public async Task LoadSliceDataAsync()
     {
         sliceCollection.Clear();
         try
@@ -178,7 +158,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
             var slices = await _printService.GetSlicesByPrintId(currentPrint.id);
             foreach (var s in slices)
             {
-                Debug.WriteLine($"Adding slice: {s.imagePath}");
+                Debug.WriteLine($"Adding slice: {s.filePath}");
                 sliceCollection.Add(s);
             }
         }
@@ -186,26 +166,6 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         {
             System.Diagnostics.Debug.WriteLine($"Error loading data: {ex.Message}");
         }
-    }
-    public async Task AddPrintToDatabase(string fullPath)
-    {
-        // check if print already exists in db
-        var existingPrint = await _printService.GetPrintByDirectory(fullPath);
-
-        if (existingPrint != null)
-        {
-            Debug.WriteLine($"❌Print with this file path {fullPath} already exists in the database. Canceling new print.");
-        }
-        else
-        {
-            // seed prints
-            await _seeder.CreatePrintFromDirectory(fullPath);
-        }
-
-        // set print on view model
-        await SetPrint(fullPath); // calls update slices
-
-        return;
     }
     public void ClearData()
     {
@@ -215,15 +175,8 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     }
     #endregion
 
-    #region Access CRUD Methods
-    public async Task DeleteCurrentPrint()
-    {
-        await _printService.DeletePrint(currentPrint); // deletes slices associated with print
-    }
-    #endregion
-
     #region Print Methods
-    public async Task MarkSlice()
+    public async Task MarkSliceAsync()
     {
         if (currentSlice == null)
         {
@@ -251,8 +204,6 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     public async void OnNavigatedTo(object parameter)
     {
         sliceCollection.Clear();
-        //currentPrint = await _printService.GetFirstPrintAsync();
-        //UpdateSlicesHelper();
     }
 
     public void OnNavigatedFrom()

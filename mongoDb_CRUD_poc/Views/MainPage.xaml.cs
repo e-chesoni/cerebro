@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Microsoft.UI.Xaml.Controls;
-using MongoDbCrudPOC.Core.Models;
 using MongoDbCrudPOC.ViewModels;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -20,6 +19,7 @@ public sealed partial class MainPage : Page
         InitializeComponent();
     }
 
+    #region Page Text Managers
     private async void PopulatePageText()
     {
         var print = ViewModel.currentPrint;
@@ -30,14 +30,14 @@ public sealed partial class MainPage : Page
             {
                 if (slice != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(slice.imagePath))
+                    if (!string.IsNullOrWhiteSpace(slice.filePath))
                     {
                         // ✅ All values are valid — update the UI
                         PrintNameTextBlock.Text = print.name;
                         CurrentSliceTextBox.Text = slice.fileName;
                         StatusTextBlock.Text = print?.complete == true ? "Complete" : "Incomplete";
-                        SlicesMarkedTextBlock.Text = (await ViewModel.GetSlicesMarked()).ToString();
-                        TotalSlicesTextBlock.Text = (await ViewModel.GetTotalSlices()).ToString();
+                        SlicesMarkedTextBlock.Text = (await ViewModel.GetSlicesMarkedAsync()).ToString();
+                        TotalSlicesTextBlock.Text = (await ViewModel.GetTotalSlicesAsync()).ToString();
                         // convert UTC to local time
                         var duration = print.duration;
                         var localStart = print.startTime.ToLocalTime();
@@ -69,7 +69,6 @@ public sealed partial class MainPage : Page
             return;
         }
     }
-
     private void ClearPageText()
     {
         directoryInput.Text = "";
@@ -81,13 +80,15 @@ public sealed partial class MainPage : Page
         TotalSlicesTextBlock.Text = "";
         ViewModel.ClearData();
     }
+    #endregion
 
+    #region Button Methods
     private async void GetSlices_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        await ViewModel.AddPrintToDatabase(directoryInput.Text);
+        await ViewModel.AddPrintToDatabaseAsync(directoryInput.Text);
         if (ViewModel.currentSlice != null)
         {
-            if (ViewModel.currentSlice.imagePath == null)
+            if (ViewModel.currentSlice.filePath == null)
             {
                 Debug.WriteLine("❌ImagePath is null.");
                 return;
@@ -95,15 +96,13 @@ public sealed partial class MainPage : Page
             PopulatePageText();
         }
     }
-
     private async void MarkSliceButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         // TODO: change current slice marked? to true
-        await ViewModel.MarkSlice();
+        await ViewModel.MarkSliceAsync();
         // TODO: update current slice in display
         PopulatePageText();
     }
-
     private async void DeletePrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         if (ViewModel.currentPrint == null)
@@ -114,12 +113,11 @@ public sealed partial class MainPage : Page
         else
         {
             Debug.WriteLine("✅Deleting print.");
-            await ViewModel.DeleteCurrentPrint();
+            await ViewModel.DeleteCurrentPrintAsync();
             Debug.WriteLine("✅Removing data from display.");
             ClearPageText();
         }
     }
-
     private async void BrowseButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         var folderPicker = new FolderPicker();
@@ -149,8 +147,9 @@ public sealed partial class MainPage : Page
                 return;
             }
             directoryInput.Text = folder.Path;
-            await ViewModel.AddPrintToDatabase(folder.Path);
+            await ViewModel.AddPrintToDatabaseAsync(folder.Path);
         }
         PopulatePageText();
     }
+    #endregion
 }

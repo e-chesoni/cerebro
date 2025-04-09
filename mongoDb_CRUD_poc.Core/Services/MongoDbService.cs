@@ -1,9 +1,6 @@
-﻿using System.Diagnostics;
-using MongoDB.Bson;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using mongoDb_CRUD_poc.Core.Contracts.Services;
 using mongoDb_CRUD_poc.Core.Attributes;
-using MongoDbCrudPOC.Core.Models;
 
 namespace mongoDb_CRUD_poc.Core.Services;
 public class MongoDbService : IMongoDbService
@@ -17,20 +14,17 @@ public class MongoDbService : IMongoDbService
         _database = _client.GetDatabase("magnetoDb");
     }
 
+    #region Setters
     public void SetDatabase(string db)
     {
         _database = _client.GetDatabase(db);
     }
+    #endregion
 
+    #region Getters
     public IMongoDatabase GetDatabase()
     {
         return _database;
-    }
-
-    public async Task<List<string>> GetCollectionNames()
-    {
-        var collectionCursor = await _database.ListCollectionNamesAsync();
-        return await collectionCursor.ToListAsync();
     }
 
     /// <summary>
@@ -48,5 +42,6 @@ public class MongoDbService : IMongoDbService
 
         return _database.GetCollection<T>(name);
     }
+    #endregion
 }
 

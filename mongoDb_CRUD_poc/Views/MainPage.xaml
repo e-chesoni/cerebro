@@ -209,7 +209,7 @@
                     </controls:DataGrid.Resources>
                     <controls:DataGrid.Columns>
                         <controls:DataGridTextColumn Binding="{Binding id}" Header="Slice ID" />
-                        <controls:DataGridTextColumn Binding="{Binding imagePath}" Header="Image Path" />
+                        <controls:DataGridTextColumn Binding="{Binding filePath}" Header="Image Path" />
                         <controls:DataGridTextColumn Binding="{Binding layer}" Header="Layer" />
                         <controls:DataGridTextColumn Binding="{Binding layerThickness}" Header="Layer Thickness" />
                         <controls:DataGridTextColumn Binding="{Binding power}" Header="Power" />

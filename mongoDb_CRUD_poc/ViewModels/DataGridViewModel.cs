@@ -1,11 +1,8 @@
 ﻿using System.Collections.ObjectModel;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using mongoDb_CRUD_poc.Core.Contracts.Services;
 using mongoDb_CRUD_poc.ViewModels.DisplayModels;
 using MongoDbCrudPOC.Contracts.ViewModels;
-using MongoDbCrudPOC.Core.Contracts.Services;
-using MongoDbCrudPOC.Core.Models;
 
 namespace MongoDbCrudPOC.ViewModels;
 
