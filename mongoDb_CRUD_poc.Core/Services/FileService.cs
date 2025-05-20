@@ -47,6 +47,5 @@ public class FileService : IFileService
         // sorts files by name (ex. 0000_square.sjf will be first, followed by 0001_square.sjf, and so on)
         return Directory.GetFiles(directoryPath, "*.sjf")
             .OrderBy(f => f);
-
     }
 }
