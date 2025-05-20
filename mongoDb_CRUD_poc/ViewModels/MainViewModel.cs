@@ -197,7 +197,6 @@ public class MainViewModel : ObservableRecipient, INavigationAware
 
         await UpdateSlicesHelper(); // this should update currentSlice
     }
-
     #endregion
 
     #region Navigation
